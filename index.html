@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Multiple Locations Map with Images</title>
+    <title>Stromkasten Locations Map</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -32,26 +32,47 @@
         h1 {
             color: #2c3e50;
         }
-        .popup-image {
-            max-width: 250px;
-            height: auto;
+        .leaflet-popup-content {
+            width: auto !important;
+            max-width: 300px !important;
+        }
+        .popup-image-container {
+            width: 100%;
+            max-height: 200px;
+            overflow: hidden;
             margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
             border-radius: 4px;
+        }
+        .popup-image {
+            max-width: 100%;
+            max-height: 200px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
         .popup-title {
             font-weight: bold;
             font-size: 1.1em;
             margin-bottom: 5px;
         }
+        .popup-coords {
+            font-size: 0.8em;
+            color: #666;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
-    <h1>Multiple Locations with Images</h1>
+    <h1>Stromkasten Locations</h1>
     <div id="map"></div>
     
     <script>
         // Initialize the map
-        const map = L.map('map').setView([48.7322, 11.1871], 12);
+        const map = L.map('map').setView([48.7322, 11.1871], 14);
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -158,9 +179,9 @@
             }
         ];
 
-        // Custom icon
+        // Custom icon (using a electricity/power icon)
         const customIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149059.png',
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/2936/2936886.png',
             iconSize: [32, 32],
             iconAnchor: [16, 32],
             popupAnchor: [0, -32]
@@ -170,32 +191,40 @@
         locations.forEach(location => {
             const coords = parseDMS(location.coords);
             if (coords) {
-                L.marker(coords, {icon: customIcon}).addTo(map)
+                L.marker(coords).addTo(map)
                     .bindPopup(`
                         <div class="popup-title">${location.name}</div>
                         <div>${location.description}</div>
-                        <div><small>${location.coords}</small></div>
-                        <img src="${location.image}" 
-                             alt="${location.name}" 
-                             class="popup-image">
+                        <div class="popup-coords">${location.coords}</div>
+                        <div class="popup-image-container">
+                            <img src="${location.image}" 
+                                 alt="${location.name}" 
+                                 class="popup-image">
+                        </div>
                     `);
             }
         });
 
-        // Optional: Add a marker cluster group for better performance with many markers
-        // Uncomment if you have many markers
-        /*
+        // Add marker clustering for better performance
         const markers = L.markerClusterGroup();
         locations.forEach(location => {
             const coords = parseDMS(location.coords);
             if (coords) {
                 const marker = L.marker(coords, {icon: customIcon})
-                    .bindPopup(`...`); // same popup content as above
+                    .bindPopup(`
+                        <div class="popup-title">${location.name}</div>
+                        <div>${location.description}</div>
+                        <div class="popup-coords">${location.coords}</div>
+                        <div class="popup-image-container">
+                            <img src="${location.image}" 
+                                 alt="${location.name}" 
+                                 class="popup-image">
+                        </div>
+                    `);
                 markers.addLayer(marker);
             }
         });
         map.addLayer(markers);
-        */
     </script>
 </body>
 </html>
