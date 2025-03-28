@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple Locations Map with Images</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            margin-top: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .popup-image {
+            max-width: 250px;
+            height: auto;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .popup-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multiple Locations with Images</h1>
+    <div id="map"></div>
+    
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([48.7322, 11.1871], 12);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Function to convert DMS to decimal degrees
+        function dmsToDecimal(degrees, minutes, seconds, direction) {
+            let decimal = degrees + (minutes / 60) + (seconds / 3600);
+            if (direction === 'S' || direction === 'W') {
+                decimal = decimal * -1;
+            }
+            return decimal;
+        }
+
+        // Parse DMS coordinate string (format: "48°43'34.5"N 11°12'10.9"E")
+        function parseDMS(dmsString) {
+            const parts = dmsString.split(' ');
+            if (parts.length !== 2) return null;
+            
+            // Parse latitude
+            const latMatch = parts[0].match(/(\d+)°(\d+)'([\d.]+)"([N|S])/);
+            if (!latMatch) return null;
+            const lat = dmsToDecimal(
+                parseFloat(latMatch[1]),
+                parseFloat(latMatch[2]),
+                parseFloat(latMatch[3]),
+                latMatch[4]
+            );
+            
+            // Parse longitude
+            const lngMatch = parts[1].match(/(\d+)°(\d+)'([\d.]+)"([E|W])/);
+            if (!lngMatch) return null;
+            const lng = dmsToDecimal(
+                parseFloat(lngMatch[1]),
+                parseFloat(lngMatch[2]),
+                parseFloat(lngMatch[3]),
+                lngMatch[4]
+            );
+            
+            return [lat, lng];
+        }
+
+        const locations = [
+            {
+                name: "Stromkasten Bushaltestelle 1",
+                coords: "48°43'34.5\"N 11°12'10.9\"E",
+                description: "Stromkasten",
+                image: "assets/1.png"
+            },
+            {
+                name: "Stromkasten Kreuzung Ampel",
+                coords: "48°43'40.9\"N 11°12'01.4\"E",
+                description: "Stromkasten",
+                image: "assets/2.png"
+            },
+            {
+                name: "TUI Stromkasten",
+                coords: "48°44'10.2\"N 11°10'57.5\"E",
+                description: "Stromkasten",
+                image: "assets/3.png"
+            },
+            {
+                name: "Müller Stromkasten",
+                coords: "48°44'11.2\"N 11°10'59.4\"E",
+                description: "Stromkasten",
+                image: "assets/4.png"
+            },
+            {
+                name: "Stromkasten Apotheke Karlsplatz",
+                coords: "48°44'11.5\"N 11°11'02.3\"E",
+                description: "Stromkasten",
+                image: "assets/5.png"
+            },
+            {
+                name: "Stromkasten Klinik Karlsplatz",
+                coords: "48°44'12.2\"N 11°11'01.0\"E",
+                description: "Stromkasten",
+                image: "assets/6.png"
+            },
+            {
+                name: "Stromkasten Theo-Lauber-Straße Fußgänger",
+                coords: "48°44'12.5\"N 11°11'09.3\"E",
+                description: "Stromkasten",
+                image: "assets/7.png"
+            },
+            {
+                name: "Stromkasten Edeka Innenstadt",
+                coords: "48°44'11.5\"N 11°11'04.3\"E",
+                description: "Stromkasten",
+                image: "assets/8.png"
+            },
+            {
+                name: "Stromkasten U. Schanze & Theo-Lauber-Straße",
+                coords: "48°44'12.2\"N 11°11'08.9\"E",
+                description: "Stromkasten",
+                image: "assets/9.png"
+            },
+            {
+                name: "Stromkasten Bushaltestelle Grundschule / Mittelschule",
+                coords: "48°44'15.1\"N 11°11'14.2\"E",
+                description: "Stromkasten",
+                image: "assets/10.png"
+            }
+        ];
+
+        // Custom icon
+        const customIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149059.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        });
+
+        // Add markers for each location
+        locations.forEach(location => {
+            const coords = parseDMS(location.coords);
+            if (coords) {
+                L.marker(coords, {icon: customIcon}).addTo(map)
+                    .bindPopup(`
+                        <div class="popup-title">${location.name}</div>
+                        <div>${location.description}</div>
+                        <div><small>${location.coords}</small></div>
+                        <img src="${location.image}" 
+                             alt="${location.name}" 
+                             class="popup-image">
+                    `);
+            }
+        });
+
+        // Optional: Add a marker cluster group for better performance with many markers
+        // Uncomment if you have many markers
+        /*
+        const markers = L.markerClusterGroup();
+        locations.forEach(location => {
+            const coords = parseDMS(location.coords);
+            if (coords) {
+                const marker = L.marker(coords, {icon: customIcon})
+                    .bindPopup(`...`); // same popup content as above
+                markers.addLayer(marker);
+            }
+        });
+        map.addLayer(markers);
+        */
+    </script>
+</body>
+</html>
