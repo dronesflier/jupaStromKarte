@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
     <title>Stromkasten Locations Map</title>
     <meta charset="utf-8" />
@@ -10,32 +10,246 @@
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
+            
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     
     <style>
-        #map {
-            height: 600px;
-            width: 100%;
-            margin-top: 20px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --gray-light: #f8f9fa;
+            --gray: #e9ecef;
+            --gray-dark: #343a40;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            background-color: #f5f7fa;
+            line-height: 1.6;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 320px;
+            background-color: white;
+            height: 100%;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
             padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
         }
-        h1 {
-            color: #2c3e50;
+        
+        .sidebar-title {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
+        
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .filter-controls {
+            padding: 15px;
+            background-color: var(--gray-light);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active {
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(1px);
+        }
+        
+        .filter-all {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        
+        .filter-yes {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .filter-no {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .location-list {
+            list-style: none;
+            overflow-y: auto;
+        }
+        
+        .location-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--gray);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-item:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .location-item.active {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .location-icon {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .location-icon.yes {
+            color: var(--secondary-color);
+        }
+        
+        .location-icon.no {
+            color: var(--danger-color);
+        }
+        
+        .location-name {
+            font-size: 0.9rem;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .hamburger-btn {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--box-shadow);
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+        
+        .hamburger-btn i {
+            color: var(--gray-dark);
+            font-size: 1.2rem;
+        }
+        
+        /* Bounce animation for hamburger button */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+        
+        .hamburger-bounce {
+            animation: bounce 1.5s ease 0.5s 2;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+        
+        .page-title {
+            font-weight: 500;
+            color: var(--gray-dark);
+            margin-bottom: 5px;
+        }
+        
+        .page-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+            border-radius: 0;
+            margin-top: 0;
+            border: none;
+        }
+        
+        /* Popup styles */
         .leaflet-popup-content {
             width: auto !important;
             max-width: 300px !important;
+            padding: 5px;
         }
+        
         .popup-image-container {
             width: 100%;
             max-height: 200px;
@@ -44,9 +258,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #f5f5f5;
-            border-radius: 4px;
+            background: var(--gray-light);
+            border-radius: var(--border-radius);
         }
+        
         .popup-image {
             max-width: 100%;
             max-height: 200px;
@@ -54,21 +269,96 @@
             height: auto;
             object-fit: contain;
         }
+        
         .popup-title {
-            font-weight: bold;
+            font-weight: 500;
             font-size: 1.1em;
             margin-bottom: 5px;
+            color: var(--gray-dark);
         }
+        
         .popup-coords {
             font-size: 0.8em;
-            color: #666;
+            color: #6c757d;
             margin: 5px 0;
+        }
+        
+        .popup-image-container a {
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+
+        .popup-image-container a:hover img {
+            opacity: 0.9;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .hamburger-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+            
+            .header {
+                padding: 15px 15px 15px 60px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Stromkasten Locations</h1>
-    <div id="map"></div>
+    <div class="app-container">
+        <button class="hamburger-btn" id="toggleSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Stromkasten</h2>
+                <p class="sidebar-subtitle">Übersicht aller Standorte</p>
+            </div>
+            
+            <div class="filter-controls">
+                <button class="filter-btn filter-all active" data-filter="all">Alle</button>
+                <button class="filter-btn filter-yes" data-filter="yes">Verfügbar</button>
+                <button class="filter-btn filter-no" data-filter="no">Nicht verfügbar</button>
+            </div>
+            
+            <ul class="location-list" id="locationList">
+                <!-- Location items will be populated by JavaScript -->
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <h1 class="page-title">Stromkasten Locations</h1>
+                <p class="page-description">Interaktive Karte aller Stromkasten-Standorte</p>
+            </header>
+            
+            <div id="map"></div>
+        </main>
+    </div>
     
     <script>
         // Initialize the map
@@ -118,113 +408,362 @@
 
         const locations = [
             {
-                name: "Stromkasten Bushaltestelle 1",
+                name: "Stromkasten Bushaltestelle 1 - JA",
                 coords: "48°43'34.5\"N 11°12'10.9\"E",
                 description: "Stromkasten",
-                image: "assets/1.png"
+                image: "assets/1.png",
+                id: 1
             },
             {
-                name: "Stromkasten Kreuzung Ampel",
+                name: "Stromkasten Kreuzung Ampel - JA",
                 coords: "48°43'40.9\"N 11°12'01.4\"E",
                 description: "Stromkasten",
-                image: "assets/2.png"
+                image: "assets/2.png",
+                id: 2
             },
             {
-                name: "TUI Stromkasten",
+                name: "TUI Stromkasten - JA",
                 coords: "48°44'10.2\"N 11°10'57.5\"E",
                 description: "Stromkasten",
-                image: "assets/3.png"
+                image: "assets/3.png",
+                id: 3
             },
             {
-                name: "Müller Stromkasten",
+                name: "Müller Stromkasten - NEIN",
                 coords: "48°44'11.2\"N 11°10'59.4\"E",
                 description: "Stromkasten",
-                image: "assets/4.png"
+                image: "assets/4.png",
+                id: 4
             },
             {
-                name: "Stromkasten Apotheke Karlsplatz",
+                name: "Stromkasten Apotheke Karlsplatz - JA, beide sind okay, ",
                 coords: "48°44'11.5\"N 11°11'02.3\"E",
                 description: "Stromkasten",
-                image: "assets/5.png"
+                image: "assets/5.png",
+                id: 5
             },
             {
-                name: "Stromkasten Klinik Karlsplatz",
+                name: "Stromkasten Klinik Karlsplatz - NEIN",
                 coords: "48°44'12.2\"N 11°11'01.0\"E",
                 description: "Stromkasten",
-                image: "assets/6.png"
+                image: "assets/6.png",
+                id: 6
             },
             {
-                name: "Stromkasten Theo-Lauber-Straße Fußgänger",
+                name: "Stromkasten Theo-Lauber-Straße Fußgänger - JA ",
                 coords: "48°44'12.5\"N 11°11'09.3\"E",
                 description: "Stromkasten",
-                image: "assets/7.png"
+                image: "assets/7.png",
+                id: 7
             },
             {
-                name: "Stromkasten Edeka Innenstadt",
+                name: "Stromkasten Edeka Innenstadt - NEIN ",
                 coords: "48°44'11.5\"N 11°11'04.3\"E",
                 description: "Stromkasten",
-                image: "assets/8.png"
+                image: "assets/8.png",
+                id: 8
             },
             {
-                name: "Stromkasten U. Schanze & Theo-Lauber-Straße",
+                name: "Stromkasten U. Schanze & Theo-Lauber-Straße - NEIN",
                 coords: "48°44'12.2\"N 11°11'08.9\"E",
                 description: "Stromkasten",
-                image: "assets/9.png"
+                image: "assets/9.png",
+                id: 9
             },
             {
-                name: "Stromkasten Bushaltestelle Grundschule / Mittelschule",
+                name: "Stromkasten Bushaltestelle Grundschule / Mittelschule - NEIN",
                 coords: "48°44'15.1\"N 11°11'14.2\"E",
                 description: "Stromkasten",
-                image: "assets/10.png"
+                image: "assets/10.png",
+                id: 10
+            },
+            {
+                name: "Stromkasten Ampel Grundschule am Englischem Garten - JA NEU",
+                coords: "48°44'14.7\"N 11°11'11.8\"E",
+                description: "Stromkasten",
+                image: "assets/11.png",
+                id: 11
+            },
+            {
+                name: "Fahrschule Kasten - JA NEU",
+                coords: "48°43'54.3\"N 11°11'13.3\"E",
+                description: "Stromkasten",
+                image: "assets/12.png",
+                id: 12
+            },
+            {
+                name: "Stromkasten Adlerstraße - JA NEU",
+                coords: "48°44'11.4\"N 11°11'01.9\"E",
+                description: "Stromkasten",
+                image: "assets/13.png",
+                id: 13
             }
         ];
 
-        // Custom icon (using a electricity/power icon)
-        const customIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/2936/2936886.png',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, -32]
+        // Custom icons (using different colored map pins)
+        const greenIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
         });
-
-        // Add markers for each location
-        locations.forEach(location => {
-            const coords = parseDMS(location.coords);
-            if (coords) {
-                L.marker(coords).addTo(map)
-                    .bindPopup(`
-                        <div class="popup-title">${location.name}</div>
-                        <div>${location.description}</div>
-                        <div class="popup-coords">${location.coords}</div>
-                        <div class="popup-image-container">
-                            <img src="${location.image}" 
-                                 alt="${location.name}" 
-                                 class="popup-image">
-                        </div>
-                    `);
-            }
+        
+        const redIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+        
+        const defaultIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
         });
 
         // Add marker clustering for better performance
         const markers = L.markerClusterGroup();
+        const markerMap = new Map(); // Map to store markers by location ID
+        
+        // Create markers and populate sidebar
         locations.forEach(location => {
             const coords = parseDMS(location.coords);
             if (coords) {
-                const marker = L.marker(coords, {icon: customIcon})
+                // Determine if location is available (JA) or not available (NEIN)
+                const isAvailable = location.name.includes("- JA") || 
+                                    location.name.includes(" JA ") || 
+                                    location.name.includes("JA NEU");
+                const isNotAvailable = location.name.includes("- NEIN") || 
+                                       location.name.includes(" NEIN ");
+                
+                // Choose icon based on availability
+                let icon = defaultIcon;
+                let status = 'unknown';
+                
+                if (isAvailable) {
+                    icon = greenIcon;
+                    status = 'yes';
+                } else if (isNotAvailable) {
+                    icon = redIcon;
+                    status = 'no';
+                }
+                
+                // Create the marker
+                const marker = L.marker(coords, {icon: icon})
                     .bindPopup(`
                         <div class="popup-title">${location.name}</div>
                         <div>${location.description}</div>
                         <div class="popup-coords">${location.coords}</div>
                         <div class="popup-image-container">
-                            <img src="${location.image}" 
-                                 alt="${location.name}" 
-                                 class="popup-image">
+                            <a href="${location.image}" target="_blank" title="Open image in new tab">
+                                <img src="${location.image}" 
+                                     alt="${location.name}" 
+                                     class="popup-image">
+                            </a>
                         </div>
                     `);
+                
+                // Add marker to cluster group
                 markers.addLayer(marker);
+                
+                // Store marker reference by location ID
+                markerMap.set(location.id, {
+                    marker,
+                    coords,
+                    status
+                });
+                
+                // Add location to sidebar list
+                addLocationToSidebar(location, status);
             }
         });
+        
         map.addLayer(markers);
+        
+        // Function to add location to sidebar
+        function addLocationToSidebar(location, status) {
+            const locationList = document.getElementById('locationList');
+            const locationItem = document.createElement('li');
+            locationItem.className = `location-item ${status === 'yes' ? 'available' : status === 'no' ? 'not-available' : ''}`;
+            locationItem.dataset.locationId = location.id;
+            locationItem.dataset.status = status;
+            
+            // Choose icon based on status
+            let iconClass = 'fas fa-question-circle';
+            if (status === 'yes') {
+                iconClass = 'fas fa-check-circle yes';
+            } else if (status === 'no') {
+                iconClass = 'fas fa-times-circle no';
+            }
+            
+            // Limit the name length to make it cleaner in the sidebar
+            const shortName = location.name.length > 40 
+                ? location.name.substring(0, 40) + '...' 
+                : location.name;
+            
+            locationItem.innerHTML = `
+                <i class="location-icon ${iconClass}"></i>
+                <span class="location-name">${shortName}</span>
+            `;
+            
+            // Add click event to center map on this location
+            locationItem.addEventListener('click', () => {
+                const markerInfo = markerMap.get(location.id);
+                if (markerInfo) {
+                    const { marker, coords } = markerInfo;
+                    
+                    // Highlight selected location in sidebar
+                    document.querySelectorAll('.location-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    locationItem.classList.add('active');
+                    
+                    // Check if marker is within a cluster
+                    const clusterParent = findClusterParent(marker);
+                    
+                    if (clusterParent) {
+                        // If it's in a cluster, handle cluster unfurling
+                        const currentZoom = map.getZoom();
+                        
+                        // First try to unspiderfy any existing spiderfied clusters
+                        markers.unspiderfy();
+                        
+                        // Calculate target zoom level - increase by at least 2 levels to break clusters
+                        const targetZoom = Math.min(currentZoom + 2, 18);
+                        
+                        // Zoom to the cluster's location first
+                        zoomToMarkerWithAnimation(marker, clusterParent.getLatLng(), targetZoom);
+                        
+                        // If the marker is still clustered after initial zoom, go to maximum zoom
+                        setTimeout(() => {
+                            if (findClusterParent(marker)) {
+                                zoomToMarkerWithAnimation(marker, coords, 18);
+                            }
+                        }, 1200);
+                    } else {
+                        // Marker is not in a cluster, just animate to it
+                        zoomToMarkerWithAnimation(marker, coords, 18);
+                    }
+                    
+                    // On mobile, close sidebar after selection
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.remove('open');
+                    }
+                }
+            });
+            
+            locationList.appendChild(locationItem);
+        }
+        
+        // Initialize filter functionality
+        function setupFilters() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const locationItems = document.querySelectorAll('.location-item');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active filter button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    const filterType = button.dataset.filter;
+                    
+                    // Filter locations based on the selected filter
+                    locationItems.forEach(item => {
+                        if (filterType === 'all' || 
+                            (filterType === 'yes' && item.dataset.status === 'yes') || 
+                            (filterType === 'no' && item.dataset.status === 'no')) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Setup responsive sidebar toggle
+        function setupSidebarToggle() {
+            const toggleButton = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            
+            toggleButton.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                
+                // Change icon based on sidebar state
+                const icon = toggleButton.querySelector('i');
+                if (sidebar.classList.contains('open')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+            
+            // Initialize sidebar state based on screen size
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('open');
+            } else {
+                // Add bounce animation on mobile to make burger menu more obvious
+                toggleButton.classList.add('hamburger-bounce');
+                
+                // Remove animation class after animations complete to prevent 
+                // it from bouncing again on subsequent interactions
+                toggleButton.addEventListener('animationend', function() {
+                    toggleButton.classList.remove('hamburger-bounce');
+                });
+            }
+            
+            // Update sidebar state on window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.add('open');
+                } else {
+                    sidebar.classList.remove('open');
+                }
+            });
+        }
+        
+        // Function to find if a marker is part of a cluster
+        function findClusterParent(marker) {
+            // Check all clusters in the map
+            let foundCluster = null;
+            
+            markers.eachLayer((layer) => {
+                if (layer instanceof L.MarkerCluster) {
+                    // Check if this cluster contains our marker
+                    if (layer.getAllChildMarkers().includes(marker)) {
+                        foundCluster = layer;
+                    }
+                }
+            });
+            
+            return foundCluster;
+        }
+        
+        // Enhanced map zoom function with smooth animation
+        function zoomToMarkerWithAnimation(marker, coords, zoom) {
+            // First, fly to the coordinates with animation
+            map.flyTo(coords, zoom, {
+                animate: true,
+                duration: 1.0 // seconds
+            });
+            
+            // After animation completes, open popup
+            setTimeout(() => {
+                marker.openPopup();
+            }, 1100); // slightly longer than the animation duration
+        }
+        
+        // Initialize all components
+        setupFilters();
+        setupSidebarToggle();
     </script>
 </body>
 </html>
